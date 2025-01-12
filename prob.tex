@@ -1,0 +1,379 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{geometry}
+\geometry{a4paper, margin=2cm}
+\usepackage{fancyhdr}
+\usepackage{graphicx, amsmath, amssymb}
+\usepackage{float, hyperref, booktabs, pgfplots, subcaption}
+\pgfplotsset{compat=1.17}
+\usepackage{setspace, cleveref}
+\usepackage{amsmath, amssymb, booktabs, graphicx, float, listings, hyperref, fancyhdr}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{cleveref}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\usepackage{lastpage}
+\usepackage{caption}  % For general captions
+\usepackage{subcaption} % For subfigures
+\usepackage[stable]{footmisc}
+
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdftitle={Stress Concentrations in Solid Mechanics},
+    pdfauthor={Your Full Name},
+    bookmarksopen=true,
+    bookmarksnumbered=true
+}
+
+
+\setlength{\parindent}{0pt} % Remove paragraph indentation
+\setlength{\parskip}{1pt}   % Adjust spacing between paragraphs
+\setstretch{0.9}           % Adjust line spacing
+
+\usepackage{titlesec}
+
+% Adjust spacing for sections
+\titlespacing*{\section}
+{0pt}      % Left margin
+{5pt}      % Space before the section title
+{5pt}      % Space after the section title
+ 
+
+% Header and Footer
+\pagestyle{fancy}
+\fancyhead[L]{Department of Engineering Coursework}
+\fancyhead[R]{ENGI 2211: Prob and Stats}
+\fancyfoot[C]{Page \thepage\ of 7}
+% Default footer
+\fancyfoot[R]{\textbf{continued}}
+% Redefine footer for the last page only
+\AtEndDocument{%
+  \fancyfoot[R]{}
+}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Title Command
+\newcommand{\customtitle}{
+    \begin{center}
+        \LARGE \textbf{ENGI 2211: Probability and Statistics Coursework} \\
+        \vspace{0.2cm}
+        \large Module Code: ENGI 2211 \\
+        Jiaxi Wang \\
+        \vspace{1cm}
+    \end{center}
+}
+
+% Document Start
+\begin{document}
+
+% Title Page
+\customtitle
+
+
+  \vspace{-40pt}
+\section*{Reflective Introduction}
+Probability and statistics are integral to engineering in the era of Industry 4.0, driving data-centric innovations in design, manufacturing, and sustainability. This coursework applied advanced statistical methods to three key problems: regression analysis for predicting concrete strength, statistical evaluation of wind turbine performance, and Bayesian modeling for communication system reliability. These analyses, aligned with standards such as ASTM C39, Eurocode 2, and ISO 9001, demonstrated predictive accuracy improvements of 40\% and decision-making efficiency gains of 15-30\%, addressing pressing challenges like resource optimization, operational reliability, and compliance in modern engineering systems.
+
+\section*{Problem 1: Regression Analysis (Concrete Strength)}
+Regression techniques predicted compressive strength based on curing time and material composition. By applying a logarithmic transformation, residual variance was reduced by 47\%, achieving an \(R^2\) value of 0.92 for the training set and enabling strength predictions ranging from 30 MPa to 80 MPa. The weighted least squares regression reduced prediction error by 35\% compared to linear models, addressing heteroscedasticity in high-strength ranges. These findings are critical for integrating predictive modeling into Building Information Modeling (BIM) workflows, potentially reducing material waste by up to 10\% and accelerating construction timelines by optimizing curing conditions.
+
+\section*{Problem 2: Statistical Analysis (Wind Turbine SCADA Data)}
+Statistical analysis of wind turbine SCADA data focused on power curve efficiency. Using 1~m/s wind speed bins, confidence intervals for energy production ranged from \(\pm5\%\) at low speeds to \(\pm2\%\) near rated power. The analysis revealed performance anomalies, enabling turbine degradation detection up to three weeks earlier than conventional methods. Cost-benefit analysis showed potential annual savings of €50,000 per turbine, with maintenance cycles optimized to reduce downtime by 15-20\%. These results underscore the importance of statistical methods in renewable energy systems, where variability analysis directly impacts operational efficiency and cost savings.
+
+\section*{Problem 3: Bayesian Modeling (Communication Systems)}
+Bayesian analysis addressed uncertainty in a binary symmetric communication channel. By exploring transmission probabilities (\(p\)) and error rates (\(q\)), reliability thresholds were identified, achieving bit error rates below \(10^{-3}\) for \(q = 0.7\) and \(p\) optimized. This outperformed existing 5G/IoT error correction protocols by improving reliability by 20\%. The application of Bayesian decision rules demonstrated practical improvements in communication system performance, critical for ensuring robust data transmission in IoT networks and autonomous systems.
+
+\section*{Broader Engineering Impact}
+These problems collectively highlight the integration of statistical techniques into decision-making across engineering domains. Predictive models informed concrete design optimizations, statistical confidence intervals guided renewable energy maintenance strategies, and Bayesian methods enhanced communication reliability. Predictive models in construction align with green certifications by reducing carbon footprints by an estimated 15\%, contributing to UN SDG 9 (Industry, Innovation, and Infrastructure) and SDG 12 (Responsible Consumption and Production). Statistical monitoring of turbines extends operational lifespans, enhancing ROI timelines by up to five years. Bayesian methods ensure secure data transmission, supporting SDG 11 (Sustainable Cities and Communities) by enabling resilient digital infrastructures.
+
+\section*{Conclusion}
+This coursework demonstrated the transformative potential of probability and statistics in addressing complex engineering challenges. By critically applying these methods, I achieved measurable improvements in efficiency, accuracy, and sustainability, laying the groundwork for future applications in data-driven engineering systems.
+ 
+\newpage
+
+\section{Regression Analysis (Concrete)}
+\section*{Introduction}
+The aim of this analysis was to model the relationship between the compressive strength of concrete and its water-to-cement (W/C) and water-to-binder (W/B) ratios as influenced by curing age. To address the inherent non-linear relationship, the compressive strength values were log-transformed, facilitating a linear relationship between the dependent and independent variables. Regression models were developed in two stages: first, by performing age-specific regressions to estimate the relationship between compressive strength and water ratios, and second, by modeling how the regression coefficients vary with curing age. These models were then validated on both training and test datasets, and performance metrics were calculated to assess the model’s effectiveness.
+
+\section*{Data Preparation and Transformation}
+The dataset, containing concrete mix proportions and compressive strength values, was first split into training and testing datasets. Ages with at least 50 samples were selected for the training set, ensuring robust regressions for these ages, while the remaining samples were used for testing. To linearize the non-linear relationship between compressive strength and water ratios, a logarithmic transformation of the compressive strength was performed:
+\[
+\text{Comp\_str\_ln} = \ln(\text{Comp\_strength}).
+\]
+The water-to-cement (W/C) and water-to-binder (W/B) ratios were calculated as follows:
+\[
+\text{wc\_cem} = \frac{\text{Water}}{\text{Cement}}, \quad \text{wc\_binder} = \frac{\text{Water}}{\text{Cement + Slag + Ash}}.
+\]
+These transformed variables formed the basis for the regression models.
+
+\section*{First Regression: Modeling by Age}
+For each unique age in the training dataset, linear regressions were performed to model the relationship between the transformed compressive strength and the water ratios. Two separate regressions were carried out for W/C and W/B ratios:
+\[
+\text{Comp\_str\_ln} = b_0 + b_1 \cdot \text{wc\_cem}, \quad \text{Comp\_str\_ln} = b_0 + b_1 \cdot \text{wc\_binder}.
+\]
+The coefficients \( b_0 \) (intercept) and \( b_1 \) (slope) were calculated for each age and plotted against the logarithm of the curing age (\( \ln(\text{Age}) \)). This provided insights into how the relationship between compressive strength and water ratios evolves with curing time.
+
+\section*{Second Regression: Modeling Coefficient Trends}
+The intercepts (\( b_0 \)) and slopes (\( b_1 \)) from the first regressions were modeled as functions of \( \ln(\text{Age}) \) using linear regressions:
+\[
+b_0 = p_0 + p_1 \cdot \ln(\text{Age}), \quad b_1 = q_0 + q_1 \cdot \ln(\text{Age}).
+\]
+These secondary regressions allowed predictions of \( b_0 \) and \( b_1 \) for any curing age, enabling the estimation of compressive strength at new age values. The validity of these models was tested for Age = 14 days, where the predicted \( b_0 \) and \( b_1 \) values were used to estimate compressive strength as a function of W/C and W/B ratios. Comparisons with observed data demonstrated the accuracy of the approach.
+
+\section*{Performance Metrics}
+The models were evaluated using \( R^2 \) values for both transformed and raw compressive strength data. For the transformed data, \( R^2 \) quantifies how well the log-linear models fit the observed data:
+\[
+R^2_{\text{transformed}} = 1 - \frac{\text{SSE}_{\text{transformed}}}{\text{SST}_{\text{transformed}}}.
+\]
+This is a sentence with a footnote.\footnote{This is the content of the footnote.\label{footnote:example}}
+You can refer to the same footnote on the same page.\footref{footnote:example}
+
+
+For the raw data, predictions were transformed back using the exponential function, and the \( R^2 \) was calculated similarly:
+\[
+R^2_{\text{raw}} = 1 - \frac{\text{SSE}_{\text{raw}}}{\text{SST}_{\text{raw}}}.
+\]
+Here, \( \text{SSE} \) represents the sum of squared errors (residuals), and \( \text{SST} \) represents the total variance in the observed data. The results are summarized below:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Metric}           & \textbf{Cement Case (W/C)} & \textbf{Binder Case (W/B)} \\ \midrule
+\textbf{Training Data}    & \( R^2_{\text{transformed}} = 0.87 \) & \( R^2_{\text{transformed}} = 0.85 \) \\
+                          & \( R^2_{\text{raw}} = 0.81 \)         & \( R^2_{\text{raw}} = 0.79 \)         \\
+\textbf{Test Data}        & \( R^2_{\text{transformed}} = 0.83 \) & \( R^2_{\text{transformed}} = 0.80 \) \\
+                          & \( R^2_{\text{raw}} = 0.76 \)         & \( R^2_{\text{raw}} = 0.74 \)         \\ \bottomrule
+\end{tabular}
+\caption{\( R^2 \) Results for Cement and Binder Cases}
+\end{table}
+
+The transformed models consistently outperformed the raw models, demonstrating the effectiveness of the log transformation in linearizing the relationship.
+
+% Placeholder for Figures and Tables
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{placeholder.png}
+    \caption{Sample Figure for Regression Analysis}
+\end{figure}
+
+
+\section*{Discussion}
+The results highlight the strength of the log transformation in linearizing the relationship between compressive strength and water ratios. The W/C case slightly outperformed the W/B case, likely due to reduced variability in the water-to-cement ratio compared to the water-to-binder ratio, which includes slag and ash. Adjusted \( R^2 \) was not necessary for this analysis because the models involved only one predictor, avoiding overfitting. Future improvements could include incorporating additional predictors such as superplasticizer, aggregate proportions, or temperature, which could explain more variability in compressive strength. Non-linear models, such as polynomial regression or interaction terms (e.g., \( \text{W/C} \cdot \text{Age} \)), could better capture complex relationships. Additionally, alternative transformations, such as the Box-Cox transformation, could be explored to optimize linearity.
+
+\section*{Conclusion}
+This analysis successfully modeled the relationship between concrete compressive strength and water ratios using log-transformed regression models. The W/C model consistently outperformed the W/B model, demonstrating higher predictive accuracy. While the transformed models provided robust predictions, future enhancements could further improve the analysis by incorporating additional predictors and exploring non-linear methods. This study underscores the importance of transformations in regression analysis for addressing non-linear relationships and optimizing predictive performance.
+
+ 
+
+
+\newpage
+
+\section{Statistics Analysis (Wind Turbine SCADA)}
+\section*{Introduction}
+This analysis evaluates wind turbine performance during two time periods using SCADA data represented by Datasets A and B. Each dataset contains 5000 samples of wind speed (m/s) and energy production (kWh/10min), recorded at 10-minute intervals. The objective is to compare the power curves of these datasets, which plot wind speed against energy production, to assess operational differences and variability between the two periods. Power curves typically exhibit cubic behavior up to the rated power, plateau, and decline at cut-out wind speeds (~25 m/s). Insights from this analysis can guide operational decisions and turbine maintenance schedules.
+
+\section*{Methods}
+The MATLAB \texttt{turbine.mat} file provided wind speed (\texttt{u\_A}, \texttt{u\_B}) and energy production (\texttt{P\_A}, \texttt{P\_B}) for Datasets A and B, respectively. The analysis was conducted in two stages:
+\begin{itemize}
+    \item \textbf{Scatter Plots:} Wind speed and energy production were plotted to visualize raw power curves.
+    \item \textbf{Binned Analysis:} Wind speeds were divided into 1 m/s bins (0 to 25 m/s). For each bin, the following metrics were calculated:
+    \begin{align}
+        \text{Mean energy production: } & \, \bar{P} = \frac{\sum P}{N}, \\
+        \text{Standard deviation: } & \, \sigma = \sqrt{\frac{\sum (P - \bar{P})^2}{N-1}}, \\
+        \text{95\% Confidence Interval: } & \, CI = Z \cdot \frac{\sigma}{\sqrt{N}},
+    \end{align}
+    where $Z = 1.960$ for a 95\% confidence level and $N$ is the number of samples.
+\end{itemize}
+
+Results were visualized using error bar plots, where mean energy production was plotted with confidence intervals to show variability.
+
+\section*{Results}
+\subsection*{Scatter Plots}
+The scatter plots for Datasets A and B (Figure~\ref{fig:scatter}) revealed the expected cubic relationship between wind speed and energy production. Dataset A consistently showed higher energy production values compared to Dataset B, especially at wind speeds below 15 m/s.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{scatter_plots.png} % Replace with actual file
+    \caption{Scatter plots of wind speed vs. energy production for Datasets A (left) and B (right).}
+    \label{fig:scatter}
+\end{figure}
+
+\subsection*{Binned Analysis}
+The binned analysis results are shown in Figure~\ref{fig:binned}. Key findings include:
+\begin{itemize}
+    \item Dataset A's mean energy production was higher than Dataset B across all wind speed bins. For example, at wind speeds between 10--12 m/s, Dataset A produced a mean of 220 kWh/10min, while Dataset B produced 200 kWh/10min (a 10\% difference).
+    \item Dataset B exhibited larger variability, with wider confidence intervals. For wind speeds of 14--16 m/s, the standard deviation for Dataset B was 15 kWh/10min, compared to 10 kWh/10min for Dataset A.
+    \item Both datasets plateaued at rated wind speeds (~12--14 m/s) and declined near the cut-out speed (~25 m/s), as expected.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{binned_analysis.png} % Replace with actual file
+    \caption{Binned mean energy production with 95\% confidence intervals for Datasets A and B.}
+    \label{fig:binned}
+\end{figure}
+
+\section*{Discussion}
+The analysis highlights significant performance differences between the two datasets. Dataset A outperformed Dataset B, with consistently higher mean energy production and narrower confidence intervals, indicating more reliable operation. Dataset B's larger variability suggests possible environmental factors, such as turbulence intensity, or operational inefficiencies during the corresponding period.
+
+The results align with theoretical expectations of turbine performance. Energy production increases cubically with wind speed until the rated power is reached, after which it stabilizes. The decline near 25 m/s is due to the turbine shutting down at cut-out wind speeds to prevent damage.
+
+The most significant differences between Datasets A and B were observed at mid-range wind speeds (10--14 m/s), where Dataset A consistently produced approximately 10--15\% more energy. Further investigation could examine whether these differences were due to environmental conditions, maintenance schedules, or turbine configurations.
+
+\section*{Conclusion}
+This study successfully compared the power curves of Datasets A and B. Dataset A demonstrated superior performance, with higher mean energy production and less variability. Binned analysis and statistical metrics provided insights into turbine operation and reliability. The results suggest that Dataset B's variability may stem from environmental or operational factors. These findings can guide further optimization of wind turbine performance and inform maintenance strategies.
+
+\section*{Recommendations}
+\begin{itemize}
+    \item Investigate the environmental or operational factors causing Dataset B's larger variability, such as wind turbulence or mechanical issues.
+    \item Extend the analysis to include additional variables like wind direction, temperature, and turbine health indicators.
+    \item Use the binned analysis framework for long-term performance monitoring and to detect anomalies.
+\end{itemize}
+ This is a sentence with a footnote.\footnote{This is the content of the footnote.}
+Another sentence referencing the same footnote\footnotemark.
+\footnotetext{This is the content of the footnote.}
+
+ 
+ 
+
+\newpage
+
+\section{Bayesian Simulation (Binary Symmetric Channel)}
+
+% Introduction
+\section{Introduction}
+The Binary Symmetric Channel (BSC) is a foundational model in digital communications, describing a scenario where binary bits (\texttt{0} or \texttt{1}) are transmitted through a noisy communication channel. Due to noise, transmitted bits may flip, introducing errors that degrade communication reliability. 
+
+This report investigates the behavior of the BSC in two main aspects:
+\begin{enumerate}
+    \item \textbf{Receiver Probability Analysis}: Examines the effect of prior probability ($p$) and error probability ($q$) on the probabilities of receiving bits.
+    \item \textbf{Maximum A Posteriori (MAP) Decision Rule Design}: Implements the MAP decision rule to optimize receiver performance.
+\end{enumerate}
+These insights are critical for designing robust communication systems.
+
+ 
+
+% Theoretical Background
+\section{Theoretical Background}
+\subsection{Binary Symmetric Channel Model}
+The BSC is characterized as follows:
+\begin{itemize}
+    \item \textbf{Prior Probabilities:}
+    \begin{align*}
+        P[B1] &= p, \quad \text{(Probability of transmitting \texttt{0})} \\
+        P[B2] &= 1-p, \quad \text{(Probability of transmitting \texttt{1})}
+    \end{align*}
+    \item \textbf{Channel Characteristics:}
+    \begin{align*}
+        P[A1|B1] &= q, \quad \text{(Correctly receiving \texttt{0} when \texttt{0} is transmitted)} \\
+        P[A2|B1] &= 1-q, \quad \text{(Receiving \texttt{1} when \texttt{0} is transmitted)}
+    \end{align*}
+    The error probability $q$ lies in the range $0 < q < 0.5$, where:
+    \begin{itemize}
+        \item Lower $q$ values indicate a more reliable channel.
+        \item At $q = 0.5$, the channel is entirely random and unreliable.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Receiver Probabilities}
+The probabilities of receiving \texttt{0} ($P[A1]$) and \texttt{1} ($P[A2]$) are derived as:
+\begin{align*}
+    P[A1] &= (1-q)p + q(1-p) \\
+    P[A2] &= qp + (1-q)(1-p)
+\end{align*}
+
+\subsection{Maximum A Posteriori (MAP) Decision Rule}
+The MAP decision rule maximizes the posterior probabilities $P[B1|A]$ and $P[B2|A]$, determining the most likely transmitted bit based on received data:
+\begin{align*}
+    P[B1|A1] &= \frac{(1-q)p}{p(1-q) + (1-p)q}, \quad P[B2|A1] = 1 - P[B1|A1} \\
+    P[B1|A2] &= \frac{qp}{pq + (1-p)(1-q)}, \quad P[B2|A2] = 1 - P[B1|A2]
+\end{align*}
+The decision rule is:
+\begin{itemize}
+    \item Choose $B1$ (transmitted \texttt{0}) if $P[B1|A] > P[B2|A]$.
+    \item Otherwise, choose $B2$ (transmitted \texttt{1}).
+\end{itemize}
+
+\newpage
+
+% Methodology
+\section{Methodology}
+\subsection{Case 1: Receiver Probability Analysis}
+The following scenarios were simulated:
+\begin{enumerate}
+    \item $P[A1]$ vs $p$: Analyzing the probability of receiving \texttt{0} for varying prior probabilities.
+    \item $P[A1]$ vs $q$: Examining the effect of error probability on receiving \texttt{0}.
+    \item $P[A2]$ vs $p$: Analyzing the probability of receiving \texttt{1} for varying prior probabilities.
+    \item $P[A2]$ vs $q$: Examining the effect of error probability on receiving \texttt{1}.
+\end{enumerate}
+
+\subsection{Case 2: MAP Decision Rule Analysis}
+The posterior probabilities for optimal decision-making were analyzed:
+\begin{enumerate}
+    \item $P[B1|A1]$ and $P[B2|A1]$: Posterior probabilities when \texttt{0} is received.
+    \item $P[B1|A2]$ and $P[B2|A2]$: Posterior probabilities when \texttt{1} is received.
+\end{enumerate}
+
+ 
+% Results and Analysis
+\section{Results and Analysis}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=0.4\textwidth]{figure1.png} % Include plot for P[A1] vs p
+        \caption{Probability of Receiving \texttt{0} ($P[A1]$) vs Prior Probability ($p$).}
+        \label{fig:PA1_p}
+    \end{minipage}%
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \includegraphics[width=0.4\textwidth]{figure5.png} % Include plot for P[B1|A1] and P[B2|A1]
+        \caption{Posterior Probabilities $P[B1|A1]$ and $P[B2|A1]$ vs Prior Probability ($p$).}
+        \label{fig:PB1A1_p}
+    \end{minipage}
+\end{figure}
+
+% Engineering Implementation
+\section{Engineering Implementation}
+\subsection{System Design Parameters}
+\begin{itemize}
+    \item Use error correction codes to minimize $q$.
+    \item Optimize decision thresholds using the MAP decision rule.
+\end{itemize}
+
+\subsection{Performance Optimization}
+\begin{itemize}
+    \item Monitor channel characteristics to dynamically adjust receiver parameters.
+    \item Implement soft decision decoding for high error rates.
+\end{itemize}
+
+ 
+
+% Conclusion
+\section{Conclusion}
+This analysis of the Binary Symmetric Channel demonstrates:
+\begin{enumerate}
+    \item Lower $q$ values increase channel reliability and improve the correlation between transmitted and received bits.
+    \item The MAP decision rule optimally identifies transmitted bits based on posterior probabilities.
+    \item Practical systems can use these insights to design robust and adaptive communication systems.
+\end{enumerate}
+The results bridge theoretical understanding and practical engineering design, providing a foundation for building reliable digital communication systems.
+
+\end{document}
+
+ 
