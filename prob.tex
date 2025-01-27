@@ -17,13 +17,48 @@
 \usepackage{caption}
 \usepackage{booktabs}
 \usepackage{cleveref}
+
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.17}
 \usepackage{lastpage}
 \usepackage{caption}  % For general captions
 \usepackage{subcaption} % For subfigures
 \usepackage[stable]{footmisc}
+\usepackage[backend=biber,style=verbose]{biblatex}
+\addbibresource{references.bib} % Replace with your .bib file name
 
+% Define MATLAB language settings for listings
+\lstdefinelanguage{Matlab}{
+    language        = Matlab,
+    morekeywords    = {matlabFunction, ...}, % Add any additional MATLAB-specific keywords here
+    morecomment     = [l]%,
+    morestring      = [b]',
+}
+\usepackage{mdframed} % Add this to preamble
+
+% Then wrap the above text in:
+\begin{mdframed}[linecolor=red,linewidth=2pt]
+\textcolor{red}{
+    % Previous text here
+}
+\end{mdframed}
+% Set up code appearance
+\definecolor{codebg}{rgb}{0.95,0.95,0.92} % Light gray background
+
+\lstdefinestyle{matlabstyle}{
+    backgroundcolor = \color{codebg},
+    basicstyle      = \ttfamily\footnotesize,
+    keywordstyle    = \color{blue},
+    commentstyle    = \color{green},
+    stringstyle     = \color{red},
+    numberstyle     = \tiny\color{gray},
+    numbers         = left,
+    numbersep       = 5pt,
+    frame           = single,
+    breaklines      = true,
+    captionpos      = b,
+    language        = Matlab
+}
 
 \hypersetup{
     colorlinks=true,
@@ -52,8 +87,8 @@
 
 % Header and Footer
 \pagestyle{fancy}
-\fancyhead[L]{Department of Engineering Coursework}
-\fancyhead[R]{ENGI 2211: Prob and Stats}
+\fancyhead[L]{Department of Engineering}
+\fancyhead[R]{Engineering Mathematics 2: Probability \& Statistics}
 \fancyfoot[C]{Page \thepage\ of 7}
 % Default footer
 \fancyfoot[R]{\textbf{continued}}
@@ -108,7 +143,31 @@ This coursework demonstrated the transformative potential of probability and sta
 The aim of this analysis was to model the relationship between the compressive strength of concrete and its water-to-cement (W/C) and water-to-binder (W/B) ratios as influenced by curing age. To address the inherent non-linear relationship, the compressive strength values were log-transformed, facilitating a linear relationship between the dependent and independent variables. Regression models were developed in two stages: first, by performing age-specific regressions to estimate the relationship between compressive strength and water ratios, and second, by modeling how the regression coefficients vary with curing age. These models were then validated on both training and test datasets, and performance metrics were calculated to assess the model’s effectiveness.
 
 \section*{Data Preparation and Transformation}
-The dataset, containing concrete mix proportions and compressive strength values, was first split into training and testing datasets. Ages with at least 50 samples were selected for the training set, ensuring robust regressions for these ages, while the remaining samples were used for testing. To linearize the non-linear relationship between compressive strength and water ratios, a logarithmic transformation of the compressive strength was performed:
+The dataset, containing concrete mix proportions and compressive strength values, was first split into training and testing datasets. The concrete dataset comprises samples aged 3, 7, 14, 28, 56, 90, 91, 100, 180, 270, 360, and 365 days. The 28-day group is predominant, exceeding 400 samples, while the 3, 7, 90, and 365-day groups also have substantial representation. In contrast, certain ages, such as 360 days, have minimal samples.
+
+Applying a threshold of 50 samples to determine training data results in the following categorization:
+
+\begin{itemize}
+    \item \textbf{Training Data} (ages with $\geq$50 samples): 3, 7, 28, and 90 days.
+    \item \textbf{Testing Data} (ages with <50 samples): 14, 56, 91, 100, 180, 270, 360, and 365 days.
+\end{itemize}
+
+
+Ages with at least 50 samples were selected for the training set, ensuring robust regressions for these ages, while the less frequent age groups are reserved for testing to evaluate performance on underrepresented scenarios.
+I applied a natural logarithm to the compressive strength values to linearize their relationship with water-binder ratios, enhancing their suitability for linear regression analysis. This transformation was implemented as follows:
+
+ 
+
+Additionally, I calculated two water-binder ratios: the traditional water-to-cement ratio (\texttt{wc\_cem}), considering only Portland cement, and a comprehensive water-to-binder ratio (\texttt{wc\_binder}), which includes supplementary cementitious materials such as slag and ash. 
+
+ 
+
+
+ To linearize the non-linear relationship between compressive strength and water ratios,  
+
+
+ 
+logarithmic transformation of the compressive strength was performed:
 \[
 \text{Comp\_str\_ln} = \ln(\text{Comp\_strength}).
 \]
@@ -123,9 +182,228 @@ For each unique age in the training dataset, linear regressions were performed t
 \[
 \text{Comp\_str\_ln} = b_0 + b_1 \cdot \text{wc\_cem}, \quad \text{Comp\_str\_ln} = b_0 + b_1 \cdot \text{wc\_binder}.
 \]
-The coefficients \( b_0 \) (intercept) and \( b_1 \) (slope) were calculated for each age and plotted against the logarithm of the curing age (\( \ln(\text{Age}) \)). This provided insights into how the relationship between compressive strength and water ratios evolves with curing time.
+The coefficients \( b_0 \) (intercept) and \( b_1 \) (slope) were calculated for each age and plotted against the logarithm of the curing age (\( \ln(\text{Age}) \)). This provided insights into how the relationship between compressive strength and water ratios evolves with curing time.This dual approach allows for a comparison between traditional and modern concrete mix designs, assessing the impact of supplementary materials on strength predictions. By implementing these transformations, I aim to develop a robust predictive model that accurately reflects the complexities of concrete composition and strength development 
+ 
+ 
+The compressive strength data was log-transformed:
+\[
+\text{Comp\_str\_ln} = \log(\text{Comp\_strength})
+\]
+Two ratios were calculated:
+\[
+\text{wc\_cem} = \frac{\text{Water}}{\text{Cement}}
+\]
+\[
+\text{wc\_binder} = \frac{\text{Water}}{\text{Cement} + \text{Slag} + \text{Ash}}
+\]
+
+\subsection{Regression Analysis}
+For each curing age, linear regressions were performed with `Comp\_str\_ln` as the dependent variable and `wc\_cem` and `wc\_binder` as independent variables.
+ 
+ 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{step3.png}
+    \caption{Regression Parameters vs Log(Age) for Cement and Binder Ratios}
+    \label{fig:regression_params}
+\end{figure}
+ 
+\subsection*{Analysis of Regression Parameters vs Age}
+
+The plots illustrate the relationship between concrete age and the regression parameters for both water-cement and water-binder ratios:
+
+\subsubsection*{Intercept (b0) Analysis}
+For the water-cement ratio, the intercept (\(b_0\)) shows an overall increasing trend with \(\ln(\text{Age})\), ranging from approximately 3.8 to 4.6. There is a noticeable peak around \(\ln(\text{Age}) \approx 4\) (about 55 days), followed by some fluctuation at later ages.
+
+For the water-binder ratio, the intercept values are generally higher, ranging from 4.4 to 4.9. The trend is similar to that of the water-cement ratio, but the increase is more stable. A peak also occurs around \(\ln(\text{Age}) \approx 4\).
+
+\subsubsection*{Slope (b1) Analysis}
+For the water-cement ratio, the slope (\(b_1\)) remains negative throughout, ranging from -1.5 to -0.5. The values become less negative with increasing age, indicating a decreasing sensitivity to the water-cement ratio as concrete matures. The trend is relatively smooth.
+
+For the water-binder ratio, the slopes are more pronounced, ranging from -3.5 to -2.0. Similar to the water-cement ratio, the slopes become less negative with age, but the magnitude of the negative values suggests a stronger initial sensitivity to the water-binder ratio. The trend is more consistent compared to the water-cement ratio.
+
+\subsubsection*{Physical Interpretation}
+The observed trends suggest that as concrete ages, its strength becomes less sensitive to variations in water content. The water-binder ratio has a stronger impact on compressive strength than the water-cement ratio. The baseline strength (\(b_0\)) increases over time, and the relationship stabilizes after around 55 days (\(\ln(\text{Age}) \approx 4\)).
+
+These findings are consistent with known concrete behavior, where early-age properties are more sensitive to mix proportions, while later-age properties show greater stability and reduced sensitivity to changes in the mix. 
 
 \section*{Second Regression: Modeling Coefficient Trends}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{second_regression_14_day_Strength_vs_Water_Binder_Ratio.png}
+    \caption{14-day Concrete Strength vs Water-Binder Ratios with Linear Regression Models}
+    \label{fig:14day_strength_wb_ratio}
+\end{figure}
+
+\subsection*{Analysis of Second Regressions (Step 4)}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{parameter_regressions.png}
+    \caption{Secondary regressions of parameters vs ln(Age)}
+    \label{fig:parameter_regressions}
+\end{figure}
+
+
+\subsubsection*{Parameter Regressions with ln(Age)}
+
+\textbf{Water-Cement Ratio Parameters:}
+\begin{itemize}
+    \item \textbf{Intercept (b0):}
+        \begin{itemize}
+            \item Shows positive correlation with ln(Age)
+            \item Values range from approximately 3.9 to 4.2
+            \item Linear fit shows moderate scatter around regression line
+            \item Slope is positive but relatively gentle
+        \end{itemize}
+    \item \textbf{Slope (b1):}
+        \begin{itemize}
+            \item Strong positive correlation with ln(Age)
+            \item Values increase from -1.5 to -0.4
+            \item Better fit than b0, with points closer to regression line
+            \item Indicates decreasing sensitivity to water-cement ratio with age
+        \end{itemize}
+\end{itemize}
+
+\textbf{Water-Binder Ratio Parameters:}
+\begin{itemize}
+    \item \textbf{Intercept (b0):}
+        \begin{itemize}
+            \item Stronger positive correlation than water-cement case
+            \item Values range from 4.4 to 4.8
+            \item Shows more scatter at higher ages
+            \item Generally higher values than water-cement case
+        \end{itemize}
+    \item \textbf{Slope (b1):}
+        \begin{itemize}
+            \item Clear positive correlation with ln(Age)
+            \item Values increase from -3.5 to -2.0
+            \item More pronounced negative slopes compared to water-cement ratio
+            \item Shows good linear fit despite some scatter
+        \end{itemize}
+\end{itemize}
+
+\subsubsection*{14-Day Strength Predictions}
+
+\textbf{Water-Cement Ratio Model:}
+\begin{itemize}
+    \item Close agreement between actual and estimated parameter models
+    \item Both models capture the negative correlation between strength and water-cement ratio
+    \item Slight divergence at higher water-cement ratios
+    \item Data points show reasonable scatter around both regression lines
+\end{itemize}
+
+\textbf{Water-Binder Ratio Model:}
+\begin{itemize}
+    \item Larger difference between actual and estimated parameter models
+    \item Steeper negative slopes compared to water-cement ratio
+    \item More pronounced divergence at higher water-binder ratios
+    \item Better clustering of data points around regression lines
+\end{itemize}
+
+\subsubsection*{Overall Findings}
+\begin{itemize}
+    \item Both parameters (b0, b1) show clear trends with ln(Age)
+    \item Water-binder ratio shows stronger age dependence than water-cement ratio
+    \item Parameter estimation is more reliable for water-cement ratio at 14 days
+    \item Models suggest that strength becomes less sensitive to water content with increasing age
+    \item Water-binder ratio appears to be a more sensitive predictor of strength
+\end{itemize}
+ 
+
+\section*{Step 5: Assessing the Full Regression}
+
+\subsection*{Analysis of Residual Distributions}
+
+The residual plots reveal distinct patterns for both water-cement and water-binder models:
+
+\begin{enumerate}
+    \item \textbf{Water-Cement Model}:
+    \begin{itemize}
+        \item Training residuals show approximately normal distribution centered near zero.
+        \item Testing residuals display wider spread (-50 to +40 MPa) and left skew.
+        \item Significant discrepancy between training and testing distributions indicates overfitting.
+    \end{itemize}
+
+    \item \textbf{Water-Binder Model}:
+    \begin{itemize}
+        \item More symmetric distribution for both training and testing data.
+        \item Smaller residual range (-40 to +30 MPa).
+        \item Better alignment between training and testing distributions.
+        \item Shows improved model stability compared to water-cement model.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{R² Results Analysis}
+
+The R² values demonstrate varying model performance:
+
+\begin{enumerate}
+    \item \textbf{Water-Cement Model}:
+    \begin{itemize}
+        \item Training: Moderate performance (transformed: 0.6687, raw: 0.5796).
+        \item Testing: Poor performance (transformed: -0.2724, raw: -0.8717).
+        \item Negative testing R² indicates model performs worse than using the mean value.
+    \end{itemize}
+
+    \item \textbf{Water-Binder Model}:
+    \begin{itemize}
+        \item Training: Good performance (transformed: 0.7779, raw: 0.7650).
+        \item Testing: Weak but positive performance (transformed: 0.4079, raw: 0.1422).
+        \item Consistently outperforms water-cement model.
+    \end{itemize}
+\end{enumerate}
+
+\subsection*{Why R²\textsubscript{adj} is Not Necessary}
+
+R²\textsubscript{adj} is not required in this analysis because:
+\begin{enumerate}
+    \item We're comparing the same models across different datasets (training vs testing).
+    \item The number of predictors remains constant across comparisons.
+    \item The focus is on model generalization rather than model selection.
+    \item Both models have the same complexity level.
+\end{enumerate}
+
+\subsection*{Suggested Improvements}
+
+Several approaches could enhance model performance:
+
+\begin{enumerate}
+    \item \textbf{Model Structure}:
+    \begin{itemize}
+        \item Include polynomial terms to capture non-linear relationships.
+        \item Add interaction terms between age and water content ratios.
+        \item Consider cross-terms between different components.
+    \end{itemize}
+
+    \item \textbf{Statistical Techniques}:
+    \begin{itemize}
+        \item Implement robust regression methods to handle outliers.
+        \item Apply regularization techniques to prevent overfitting.
+        \item Use cross-validation for more reliable model evaluation.
+    \end{itemize}
+
+    \item \textbf{Feature Engineering}:
+    \begin{itemize}
+        \item Consider additional concrete mixture properties.
+        \item Develop composite features that better represent material interactions.
+        \item Transform variables to better capture underlying physical relationships.
+    \end{itemize}
+\end{enumerate}
+ 
+
+ 
+These results demonstrate that concrete strength parameters can be effectively modeled as functions of age, though with varying degrees of accuracy between water-cement and water-binder ratios. The 14-day predictions show that these age-based parameter estimates provide reasonable approximations of the actual strength relationships.
+\section*{Analysis of Figure 2}
+
+The analysis of \textbf{Figure 2: 14-day Concrete Strength vs Water-Binder Ratios with Linear Regression Models} reveals that both water-cement (W/C) and water-binder (W/B) ratios exhibit a negative correlation with concrete strength, indicating that as these ratios increase, the compressive strength decreases. However, the W/B ratio demonstrates a stronger linear relationship, evidenced by a steeper negative slope and reduced data scatter around the regression line. This suggests that the W/B ratio is a more reliable predictor of 14-day concrete strength compared to the W/C ratio. Nonetheless, the presence of data variability and potential outliers in both plots indicates that additional factors may influence strength, and reliance solely on these ratios could oversimplify the prediction model.
+
+For a more comprehensive understanding of the relationship between water-binder ratios and concrete strength, further analysis incorporating additional variables and advanced modeling techniques is recommended. Exploring non-linear models or machine learning approaches could provide deeper insights into the factors affecting concrete strength. For instance, a study on concrete strength prediction using machine learning offers valuable perspectives on this topic \cite{concrete_ml}.
+
+
+In summary, while the W/B ratio serves as a better predictor of 14-day concrete strength than the W/C ratio, incorporating a broader range of variables and employing more sophisticated modeling approaches would enhance the accuracy and reliability of strength predictions.
+
+
 The intercepts (\( b_0 \)) and slopes (\( b_1 \)) from the first regressions were modeled as functions of \( \ln(\text{Age}) \) using linear regressions:
 \[
 b_0 = p_0 + p_1 \cdot \ln(\text{Age}), \quad b_1 = q_0 + q_1 \cdot \ln(\text{Age}).
@@ -162,22 +440,292 @@ Here, \( \text{SSE} \) represents the sum of squared errors (residuals), and \( 
 
 The transformed models consistently outperformed the raw models, demonstrating the effectiveness of the log transformation in linearizing the relationship.
 
-% Placeholder for Figures and Tables
+ \section*{Systematic Analysis of R\textsuperscript{2} Results}
+
+\subsection*{1. General Observations}
+- The Binder Case consistently outperforms the Cement Case across all metrics.
+- Both models perform better on training data than testing data.
+- The transformed data generally shows better R\textsuperscript{2} values than raw data.
+
+\subsection*{2. Training Data Performance}
+\textbf{Cement Case:}
+\begin{itemize}
+    \item Transformed: $R^2 = 0.6687$ vs. Raw: $R^2 = 0.5796$
+    \item Moderate performance, explaining about 67\% of variance in the transformed space.
+    \item Lower performance in raw space suggests non-linear relationships remain.
+\end{itemize}
+
+\textbf{Binder Case:}
+\begin{itemize}
+    \item Transformed: $R^2 = 0.7779$ vs. Raw: $R^2 = 0.7650$
+    \item Good performance, explaining about 78\% of variance.
+    \item Similar performance in both spaces suggests better model stability.
+\end{itemize}
+
+\subsection*{3. Testing Data Performance}
+\textbf{Cement Case:}
+\begin{itemize}
+    \item Transformed: $R^2 = -0.2724$ vs. Raw: $R^2 = -0.8717$
+    \item Negative R\textsuperscript{2} values indicate serious problems.
+    \item The model performs worse than a horizontal line (mean value).
+    \item Suggests significant overfitting to training data.
+\end{itemize}
+
+\textbf{Binder Case:}
+\begin{itemize}
+    \item Transformed: $R^2 = 0.4079$ vs. Raw: $R^2 = 0.1422$
+    \item Moderate to poor performance.
+    \item While better than the Cement Case, still shows substantial degradation from training performance.
+    \item Indicates some overfitting, though less severe.
+\end{itemize}
+
+\subsection*{4. Key Issues}
+\begin{itemize}
+    \item The negative R\textsuperscript{2} values in the Cement Case testing data are particularly concerning.
+    \item Large gap between training and testing performance suggests overfitting.
+    \item The model struggles to generalize to new age values.
+\end{itemize}
+
+\subsection*{5. Improvement Suggestions}
+\begin{itemize}
+    \item Consider regularization to reduce overfitting.
+    \item Include interaction terms between age and water-cement/binder ratios.
+    \item Use non-linear regression techniques.
+    \item Collect more data for underrepresented age values.
+    \item Consider using cross-validation instead of a single train-test split.
+\end{itemize}
+
+\subsection*{6. Why Binder Case Performs Better}
+\begin{itemize}
+    \item Including slag and ash in the binder calculation likely captures more of the actual chemical reactions in concrete curing.
+    \item The combined binder ratio might better represent the true water-to-reactive-materials relationship.
+    \item This aligns with concrete chemistry theory where multiple components contribute to strength development.
+\end{itemize}
+
+\section*{Conclusion}
+The results suggest that while the water-binder model shows promise, both models need significant improvement for reliable predictions on new data, particularly for ages not well-represented in the training set.
+
+
+\section{Data Summary and Initial Analysis}
+
+\subsection{Dataset Overview}
+Two datasets (A and B) were analyzed, each containing 5000 data points collected at 10-minute intervals from a wind turbine. The data includes:
+\begin{itemize}
+    \item Wind speed measurements (\si{m/s})
+    \item Energy production (\si{kWh/10min})
+    \item Comparable wind speed ranges (0-24.7 \si{m/s} for A, 0-27.8 \si{m/s} for B)
+\end{itemize}
+
+\subsection{Scatter Plot Analysis}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.3\textwidth]{placeholder.png}
-    \caption{Sample Figure for Regression Analysis}
+    \includegraphics[width=0.5\textwidth]{Figure1_PowerCurvesComparison.pdf}
+    \caption{Scatter plots of wind turbine power curves for Datasets A and B}
+    \label{fig:scatter}
 \end{figure}
 
+The scatter plots reveal several key characteristics:
 
+\textbf{Dataset A:}
+\begin{itemize}
+    \item Shows a clear, well-defined power curve
+    \item Exhibits minimal scatter in the rated power region
+    \item Demonstrates consistent performance with low variability
+    \item Clear cubic relationship in the lower wind speed region
+    \item Sharp transition to rated power at approximately 12-13 \si{m/s}
+\end{itemize}
+
+\textbf{Dataset B:}
+\begin{itemize}
+    \item Shows more scattered data points
+    \item Notable secondary cluster of points around 100 \si{kWh/10min}
+    \item Higher variability in the rated power region
+    \item Less defined transition to rated power
+    \item More pronounced variation at higher wind speeds
+\end{itemize}
+
+\subsection{Initial Hypothesis}
+Based on the scatter plots, Dataset B appears to represent a period of less optimal turbine performance, possibly due to:
+\begin{itemize}
+    \item Maintenance issues
+    \item Environmental factors
+    \item Operational constraints
+    \item Potential control system variations
+\end{itemize}
+
+\section{Statistical Analysis}
+
+\subsection{Binned Analysis Results}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Figure2_BinnedAnalysis.png}
+    \caption{Binned power curves with 95\% confidence intervals}
+    \label{fig:binned}
+\end{figure}
+
+\textbf{Key Findings:}
+\begin{enumerate}
+    \item \textbf{Rated Power Characteristics:}
+    \begin{itemize}
+        \item Dataset A: 272.56 \si{kWh/10min} at 17.4 \si{m/s}
+        \item Dataset B: 260.26 \si{kWh/10min} at 20.4 \si{m/s}
+        \item Dataset A achieves rated power at lower wind speeds
+    \end{itemize}
+
+    \item \textbf{Performance Differences:}
+    \begin{itemize}
+        \item Mean difference (B-A): -34.60 \si{kWh/10min}
+        \item Maximum absolute difference: 141.49 \si{kWh/10min}
+        \item Statistically significant differences observed across most operational wind speeds
+    \end{itemize}
+
+    \item \textbf{Confidence Intervals:}
+    \begin{itemize}
+        \item Dataset A shows narrower confidence intervals, indicating more consistent operation
+        \item Dataset B exhibits wider confidence intervals, particularly at higher wind speeds
+        \item Marked increase in uncertainty above 20 \si{m/s} in Dataset B
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Critical Regions Analysis}
+
+\begin{enumerate}
+    \item \textbf{Cut-in Region (0-5 \si{m/s}):}
+    \begin{itemize}
+        \item Both datasets show similar behavior
+        \item Low variability and consistent performance
+    \end{itemize}
+
+    \item \textbf{Cubic Region (5-12 \si{m/s}):}
+    \begin{itemize}
+        \item Dataset A shows smoother transition
+        \item Dataset B exhibits higher variability
+        \item Significant differences in power output observed
+    \end{itemize}
+
+    \item \textbf{Rated Power Region (12-20 \si{m/s}):}
+    \begin{itemize}
+        \item Dataset A maintains stable output
+        \item Dataset B shows fluctuating performance
+        \item Notable difference in average power output
+    \end{itemize}
+
+    \item \textbf{Cut-out Region ($>$20 \si{m/s}):}
+    \begin{itemize}
+        \item Dataset A maintains stability
+        \item Dataset B shows dramatic increase in variability
+        \item Possible early cut-out behavior in Dataset B
+    \end{itemize}
+\end{enumerate}
+
+\section{Conclusions}
+
+\begin{enumerate}
+    \item \textbf{Performance Comparison:}
+    \begin{itemize}
+        \item Dataset A represents more optimal turbine operation
+        \item Dataset B suggests potential operational issues or different control strategies
+    \end{itemize}
+
+    \item \textbf{Statistical Significance:}
+    \begin{itemize}
+        \item Significant differences observed across most operational wind speeds
+        \item Greatest divergence in performance occurs in the rated power region
+    \end{itemize}
+
+    \item \textbf{Operational Implications:}
+    \begin{itemize}
+        \item Dataset B's increased variability suggests potential maintenance requirements
+        \item Lower rated power in Dataset B indicates reduced efficiency
+        \item Higher uncertainty at high wind speeds suggests possible control system differences
+    \end{itemize}
+
+    \item \textbf{Recommendations:}
+    \begin{itemize}
+        \item Investigate causes of increased variability in Dataset B
+        \item Assess maintenance records for the period of Dataset B
+        \item Consider control system optimization for high wind speed operation
+        \item Monitor cut-out behavior in high wind conditions
+    \end{itemize}
+\end{enumerate}
+
+This analysis provides strong evidence of distinct operational characteristics between the two periods, with Dataset A representing more optimal turbine performance.
+ 
 \section*{Discussion}
 The results highlight the strength of the log transformation in linearizing the relationship between compressive strength and water ratios. The W/C case slightly outperformed the W/B case, likely due to reduced variability in the water-to-cement ratio compared to the water-to-binder ratio, which includes slag and ash. Adjusted \( R^2 \) was not necessary for this analysis because the models involved only one predictor, avoiding overfitting. Future improvements could include incorporating additional predictors such as superplasticizer, aggregate proportions, or temperature, which could explain more variability in compressive strength. Non-linear models, such as polynomial regression or interaction terms (e.g., \( \text{W/C} \cdot \text{Age} \)), could better capture complex relationships. Additionally, alternative transformations, such as the Box-Cox transformation, could be explored to optimize linearity.
 
 \section*{Conclusion}
 This analysis successfully modeled the relationship between concrete compressive strength and water ratios using log-transformed regression models. The W/C model consistently outperformed the W/B model, demonstrating higher predictive accuracy. While the transformed models provided robust predictions, future enhancements could further improve the analysis by incorporating additional predictors and exploring non-linear methods. This study underscores the importance of transformations in regression analysis for addressing non-linear relationships and optimizing predictive performance.
 
- 
+ % In the preamble
+\usepackage{xcolor}
+\usepackage{mdframed}
 
+% In the document
+\begin{mdframed}[linecolor=red,linewidth=2pt]
+{\color{red}  % Changed from \textcolor to \color
+\section*{Identified Problems in Data Analysis}
+
+The analysis reveals several critical issues in the wind turbine's operation between the two datasets:
+
+\begin{enumerate}
+    \item \textbf{Dataset B Anomalies:}
+    \begin{itemize}
+        \item Presence of a distinct secondary cluster around 100 kWh/10min
+        \item Indicates potential partial turbine shutdown periods
+        \item Suggests possible control system malfunctions or maintenance events
+        \item Evidence of possible turbine derating
+    \end{itemize}
+
+    \item \textbf{Performance Degradation:}
+    \begin{itemize}
+        \item Significant increase in performance variability
+        \item Reduced average power output compared to Dataset A
+        \item Substantially wider confidence intervals indicating operational inconsistency
+        \item Lower overall energy production efficiency
+    \end{itemize}
+
+    \item \textbf{High Wind Speed Operation Issues ($>$20 m/s):}
+    \begin{itemize}
+        \item Premature power reduction in Dataset B
+        \item Extremely large confidence intervals suggesting unstable operation
+        \item Evidence of early cut-out behavior
+        \item Inconsistent performance near the cut-out speed
+    \end{itemize}
+
+    \item \textbf{Rated Power Region Concerns:}
+    \begin{itemize}
+        \item Dataset A shows clean transition to rated power ($\sim$270 kWh/10min)
+        \item Dataset B exhibits:
+        \begin{itemize}
+            \item Lower rated power ($\sim$260 kWh/10min)
+            \item Higher data scatter
+            \item Delayed achievement of rated power
+            \item Unstable operation at rated power
+        \end{itemize}
+    \end{itemize}
+
+    \item \textbf{Statistical Reliability Issues:}
+    \begin{itemize}
+        \item Dataset B shows problematic confidence intervals at high wind speeds indicating:
+        \begin{itemize}
+            \item Potential insufficient data points in high-wind bins
+            \item Highly variable turbine behavior
+            \item Possible control system instability
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+These identified problems strongly suggest the need for:
+\begin{itemize}
+    \item Comprehensive maintenance inspection
+    \item Control system diagnostic and optimization
+    \item Investigation into the cause of the secondary power cluster
+    \item Review and adjustment of cut-out behavior
+    \item Reassessment of high wind speed operation strategy
+\end{itemize}
+} % End of \color{red}
+\end{mdframed}
 
 \newpage
 
@@ -210,6 +758,7 @@ The scatter plots for Datasets A and B (Figure~\ref{fig:scatter}) revealed the e
     \caption{Scatter plots of wind speed vs. energy production for Datasets A (left) and B (right).}
     \label{fig:scatter}
 \end{figure}
+
 
 \subsection*{Binned Analysis}
 The binned analysis results are shown in Figure~\ref{fig:binned}. Key findings include:
